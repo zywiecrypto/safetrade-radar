@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>SafeTrade Radar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=DM+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#0c1016; --panel:#141a22; --panel2:#19212b; --ink:#e8edf3; --muted:#93a0ae; --line:#252e3a;
+  --accent:#6ea2ff; --accent-soft:#182742; --band:#6ea2ff3d;
+  --up:#3fcf8e; --up-soft:#11301f; --warn:#f2b54a; --warn-soft:#3a2c12; --down:#ff7a70; --down-soft:#3b1b19; --idle:#8b96a2; --idle-soft:#222b36;
+  --f-body:"Manrope","Segoe UI",system-ui,-apple-system,sans-serif;
+  --f-display:var(--f-body);
+  --f-mono:"DM Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 var(--f-body)}
+a{color:var(--accent)}
+h1,h2,h3{margin:0;font-family:var(--f-display);letter-spacing:-.01em}
+h1{font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1.15;text-wrap:balance}
+h2{font-size:18px;font-weight:800}h3{font-size:16px;font-weight:800}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.lbl{font:500 11px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.dim{color:var(--muted)}.pos{color:var(--up)}.neg{color:var(--down)}
+.topbar{background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.topin{max-width:1280px;margin:0 auto;padding:10px 24px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 28px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;letter-spacing:-.01em;color:var(--ink)}
+.tabs{display:flex;gap:22px}
+.tab{font:600 14px var(--f-body);background:none;border:0;border-bottom:2px solid transparent;color:var(--muted);padding:10px 0;cursor:pointer}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.grow{flex-grow:1}
+input.q,.langsel{font:14px var(--f-body);padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+input.q{width:190px}
+.wrap{max-width:1280px;margin:0 auto;padding:26px 24px 60px;display:flex;flex-direction:column;gap:24px}
+.hero{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px}
+.hero p{margin:6px 0 0;color:var(--muted);max-width:68ch}
+.hero .meta{font:12px var(--f-mono);color:var(--muted);text-align:right;display:flex;flex-direction:column;gap:2px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.kpi span{display:block;font-size:13px;color:var(--muted)}
+.kpi b{display:block;font:400 26px/1.2 var(--f-mono);margin-top:4px}
+.view{display:flex;flex-direction:column;gap:24px}.view[hidden]{display:none}
+.sec-head{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:baseline;margin-bottom:12px}
+.sec-head p{margin:0;color:var(--muted);font-size:13px}
+.sig{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.sigbox{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;min-width:0}
+.sigbox ul{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column}
+.sigbox li{display:flex;justify-content:space-between;gap:10px;cursor:pointer;font-size:13px;padding:7px 0;border-top:1px solid var(--line)}
+.sigbox li b{font-weight:800;font-size:14px}
+.sigbox li span{color:var(--muted);text-align:right;min-width:0;overflow-wrap:anywhere;font-family:var(--f-mono);font-size:12px}
+.sigbox li:hover b{color:var(--accent)}
+.sigbox .none{color:var(--muted);cursor:default}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.card .chips{padding:14px 18px;border-bottom:1px solid var(--line)}
+.chips h2{margin-right:8px}
+.chip{font:600 13px var(--f-body);border:1px solid var(--line);background:transparent;color:var(--muted);padding:7px 14px;border-radius:99px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tab:focus-visible,.chip:focus-visible,.pcard:focus-visible,input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tblwrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:1000px;font-size:13px}
+th,td{padding:12px 7px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{padding-left:18px}th:last-child,td:last-child{padding-right:18px}
+th:nth-child(2),td:nth-child(2){text-align:left}
+th{font:700 12px var(--f-body);color:var(--muted);cursor:pointer;user-select:none;background:var(--panel2)}
+th[aria-sort]{color:var(--ink)}
+td{font-family:var(--f-mono)}
+tbody tr{cursor:pointer}tbody tr:hover,tbody tr.sel{background:var(--panel2)}
+tbody tr:last-child td{border-bottom:0}
+td.sym{font-family:var(--f-body)}td.sym b{font-weight:800;font-size:15px}td.sym span{color:var(--muted);margin-left:3px}
+.pill{font:700 12px var(--f-body);padding:3px 10px;border-radius:99px;white-space:nowrap}
+.p-up{background:var(--up-soft);color:var(--up)}.p-warn{background:var(--warn-soft);color:var(--warn)}.p-down{background:var(--down-soft);color:var(--down)}.p-idle{background:var(--idle-soft);color:var(--idle)}.p-new{background:var(--accent-soft);color:var(--accent)}
+.bal{display:inline-block;width:64px;height:8px;border-radius:99px;background:var(--down);overflow:hidden;vertical-align:middle}
+.bal i{display:block;height:100%;background:var(--up)}
+#detail{background:var(--panel);border:1px solid var(--accent);border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;gap:16px}
+#detail[hidden]{display:none}
+.dhead{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between}
+.dhead .t{font-weight:800;font-size:26px;letter-spacing:-.02em;margin-right:8px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:10px 18px}
+.fact span{display:block;font-size:12px;color:var(--muted)}
+.fact b{font:400 14px var(--f-mono);font-variant-numeric:tabular-nums}
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px}
+.chart{min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.chart svg{width:100%;height:auto;display:block}.chart text{font:10px var(--f-mono);fill:var(--muted)}
+.note{color:var(--muted);font-size:13px;max-width:90ch;margin:0}
+button.x{font:600 13px var(--f-body);border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:8px;padding:7px 12px;cursor:pointer;margin-left:10px}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.pcard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:10px;min-width:0;cursor:pointer;text-align:left;font:inherit;color:inherit}
+.pcard:hover{border-color:var(--accent)}
+.pcard .hd{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.pcard .hd b{font-weight:800;font-size:18px}.pcard .hd small{color:var(--muted);margin-left:3px;font-size:14px}
+.pcard svg{width:100%;height:auto;display:block}.pcard svg text{font:10px var(--f-mono);fill:var(--muted)}
+.pcard .ph{height:120px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;background:var(--bg);border-radius:8px}
+.pcard .why{margin:0;font-size:13px;color:var(--muted);line-height:1.45}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--muted);align-items:center;margin-top:12px}
+.legend i{display:inline-block;width:18px;height:10px;vertical-align:middle;margin-right:5px;border-radius:2px}
+.empty{background:var(--panel);border:1px dashed var(--line);border-radius:12px;padding:22px;color:var(--muted)}
+footer{font-size:12px;color:var(--muted);max-width:95ch;line-height:1.6}
+@media (max-width:640px){.topin,.wrap{padding-left:16px;padding-right:16px}h1{font-size:24px}.hero .meta{text-align:left}input.q{width:140px}.tabs{order:3;width:100%}}
+</style>
+</head>
+<body>
+<div class="topbar"><div class="topin">
+  <div class="brand"><svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><circle cx="13" cy="13" r="11" fill="none" stroke="#6ea2ff" stroke-width="2"/><circle cx="13" cy="13" r="5" fill="none" stroke="#6ea2ff" stroke-width="2"/><line x1="13" y1="13" x2="21" y2="6" stroke="#6ea2ff" stroke-width="2"/></svg>SafeTrade Radar</div>
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="t-markets" aria-selected="true" aria-controls="v-markets" data-t="tabMarkets"></button>
+    <button class="tab" role="tab" id="t-phases" aria-selected="false" aria-controls="v-phases" data-t="tabPhases"></button>
+  </div>
+  <div class="grow"></div>
+  <input class="q" id="q" type="search" autocomplete="off">
+  <select class="langsel" id="lang" aria-label="Language"></select>
+</div></div>
+
+<div class="wrap">
+  <div class="hero">
+    <div>
+      <h1 data-t="heroTitle"></h1>
+      <p data-t="intro"></p>
+    </div>
+    <div class="meta"><span id="gen"></span><span data-t="unofficial"></span></div>
+  </div>
+
+  <div id="nodata" class="empty" hidden data-t="nodata"></div>
+
+  <section class="kpis" id="kpis"></section>
+
+  <section id="detail" hidden></section>
+
+  <div class="view" id="v-phases" role="tabpanel" hidden>
+    <section>
+      <div class="sec-head"><h2 data-t="pTitle"></h2><p id="pcnt"></p></div>
+      <div class="chips" id="pchips"></div>
+      <div class="legend"><span><i style="background:var(--band)"></i><span data-t="lBase"></span></span><span><i style="background:var(--accent);height:10px;width:10px;clip-path:polygon(50% 0,100% 100%,0 100%)"></i><span data-t="lBo"></span></span><span><i style="background:var(--warn);width:10px;border-radius:50%"></i><span data-t="lPeak"></span></span><span><i style="background:var(--ink);width:10px;border-radius:50%"></i><span data-t="lNow"></span></span><span data-t="lNote"></span></div>
+    </section>
+    <div class="pgrid" id="pgrid"></div>
+  </div>
+
+  <div class="view" id="v-markets" role="tabpanel">
+    <section>
+      <div class="sec-head"><h2 data-t="hlTitle"></h2><p data-t="hlHint"></p></div>
+      <div class="pgrid" id="hl"></div>
+    </section>
+    <section>
+      <div class="sec-head"><h2 data-t="sigTitle"></h2><p data-t="sigHint"></p></div>
+      <div class="sig" id="sig"></div>
+    </section>
+    <section class="card">
+      <div class="chips" id="chips"></div>
+      <div class="tblwrap"><table id="tbl"></table></div>
+    </section>
+    <p class="note" id="cnt"></p>
+  </div>
+
+  <footer data-t="footer"></footer>
+</div>
+
+<script src="i18n.js"></script>
+<script src="data/data.js"></script>
+<script>
+const R = window.RADAR, L = window.RADAR_I18N, $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const st = { tier: "niche", quote: "all", q: "", sort: "vol", dir: -1, active: true, sel: null, view: "markets", pphase: "all", ptier: "niche", pactive: true, lang: "en" };
+try { const s = localStorage.getItem("radar-lang"); if (s && L[s]) st.lang = s; else { const n = (navigator.language || "en").slice(0,2).toLowerCase(); if (L[n]) st.lang = n; } } catch(e) {}
+const T = (k, v) => { let s = (L[st.lang] && L[st.lang][k]) ?? L.en[k] ?? k; if (v) for (const x in v) s = s.split("{" + x + "}").join(v[x]); return s; };
+const loc = () => L[st.lang]._loc;
+const nf = (v, o) => v.toLocaleString(loc(), o);
+function fP(v){ if (v == null || !isFinite(v) || v === 0) return "—"; const a = Math.abs(v);
+  if (a >= 1000) return "$" + nf(v,{maximumFractionDigits:0}); if (a >= 1) return "$" + nf(v,{maximumFractionDigits:2}); if (a >= 0.01) return "$" + nf(v,{maximumFractionDigits:4});
+  return "$" + nf(v,{maximumSignificantDigits:3}); }
+function fQ(v){ if (v == null || !isFinite(v) || v === 0) return "—"; const a = Math.abs(v); return a >= 1 ? nf(v,{maximumFractionDigits: a >= 100 ? 2 : 4}) : nf(v,{maximumSignificantDigits:4}); }
+function fB(v){ if (v == null || !isFinite(v)) return "—"; return "$" + nf(v,{notation:"compact",maximumFractionDigits: Math.abs(v) >= 1000 ? 1 : 0}); }
+const sgn = v => (v > 0 ? "+" : "") + nf(v,{maximumFractionDigits:1}) + "%";
+const pct = v => v == null || !isFinite(v) ? '<span class="dim">—</span>' : `<span class="${v >= 0 ? "pos" : "neg"}">${sgn(v)}</span>`;
+const PH = {breakout:"p-up",uptrend:"p-up",accumulation:"p-warn",post_breakout:"p-warn",consolidation:"p-warn",correction:"p-down","new":"p-new"};
+const pill = p => `<span class="pill ${PH[p] || "p-idle"}">${esc(T("ph_" + (PH[p] ? p : "none")))}</span>`;
+const pgroup = p => ({breakout:"up",uptrend:"up",accumulation:"acc",post_breakout:"cons",consolidation:"cons",correction:"down","new":"new"})[p] || "other";
+const since = m => m.listed || (m.created || "").slice(0,10) || null;
+const age = m => since(m) ? Math.floor((Date.now() - Date.parse(since(m))) / 864e5) : null;
+const day = t => new Date(t*1000).toISOString().slice(0,10);
+const dh = t => new Date(t*1000).toLocaleString(loc(),{day:"2-digit",month:"2-digit",hour:"2-digit"});
+function spark(a, w=84, h=22){ a = (a || []).filter(x => x > 0); if (a.length < 3) return ""; const lo = Math.min(...a), hi = Math.max(...a), L0 = Math.log(lo), H = Math.log(hi) - L0 || 1;
+  const d = a.map((v,i) => `${i ? "L" : "M"}${(i/(a.length-1)*w).toFixed(1)},${(h-2-(Math.log(v)-L0)/H*(h-4)).toFixed(1)}`).join("");
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true"><path d="${d}" fill="none" stroke="var(--accent)" stroke-width="1.3"/></svg>`; }
+const offPeak = a => a.dd >= 0 ? T("rAtPeak") : T("rOffPeak",{p: a.dd});
+
+function statics(){
+  document.documentElement.lang = st.lang;
+  document.querySelectorAll("[data-t]").forEach(el => { el.textContent = T(el.dataset.t); });
+  $("lang").innerHTML = Object.keys(L).map(k => `<option value="${k}"${k === st.lang ? " selected" : ""}>${esc(L[k]._name)}</option>`).join("");
+  $("lang").setAttribute("aria-label", T("lang")); $("q").placeholder = T("fSearch"); $("q").setAttribute("aria-label", T("fSearch"));
+  if (R) $("gen").textContent = T("gen",{d: new Date(R.generated).toLocaleString(loc(),{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"})});
+}
+function kpis(){
+  const M = R.markets, nu = M.filter(m => age(m) != null && age(m) <= 30).length, br = M.filter(m => m.tier === "niche" && m.vol > 0 && pgroup(m.an.phase) === "up").length;
+  $("kpis").innerHTML = [[fB(R.total_vol),"kpiVol"],[M.filter(m => m.vol > 0).length + " / " + M.length,"kpiActive"],[nu,"kpiNew"],[br,"kpiUp"]]
+    .map(([b,s],i) => `<div class="kpi"><span>${esc(T(s))}</span><b class="${i === 3 ? "pos" : ""}">${b}</b></div>`).join("");
+}
+function signals(){
+  const M = R.markets.filter(m => m.tier === "niche");
+  const box = (k, rows) => `<div class="sigbox"><h3>${esc(T(k))}</h3><div class="lbl">${esc(T(k + "H"))}</div><ul>${rows.length ? rows.slice(0,8).map(([m,t]) => `<li data-id="${m.id}"><b>${esc(m.name)}</b><span>${esc(t)}</span></li>`).join("") : `<li class="none">${esc(T("sigNone"))}</li>`}</ul></div>`;
+  const nw = R.markets.filter(m => age(m) != null && age(m) <= 45).sort((a,b) => age(a) - age(b)).map(m => [m, T("rAge",{n: age(m), v: fB(m.vol)})]);
+  const vx = M.filter(m => m.volx >= 3 && m.vol >= 5000).sort((a,b) => b.volx - a.volx).map(m => [m, T("rVolx",{x: nf(m.volx), v: fB(m.vol)})]);
+  const bo = M.filter(m => m.vol >= 1000 && pgroup(m.an.phase) === "up").sort((a,b) => (b.an.dd ?? -99) - (a.an.dd ?? -99)).map(m => [m, (m.an.multiple ? T("rMult",{x: nf(m.an.multiple)}) : T("rTrend")) + (m.an.dd != null ? " · " + offPeak(m.an) : "")]);
+  const ba = M.filter(m => m.an.phase === "accumulation" && m.vol >= 500 && m.an.acc_days >= 20).sort((a,b) => (a.an.tight || 9) - (b.an.tight || 9)).map(m => [m, T("rBase",{n: m.an.acc_days, x: m.an.tight ? nf(m.an.tight) : "?"})]);
+  const bp = M.filter(m => m.flow && m.flow.share >= 62 && m.flow.buy + m.flow.sell >= 10000).sort((a,b) => b.flow.share - a.flow.share).map(m => [m, T("rBuy",{p: nf(m.flow.share), v: fB(m.flow.buy + m.flow.sell)})]);
+  const dp = M.filter(m => m.depth && m.depth.b2 >= 2000 && m.depth.b2 >= 2 * m.depth.a2).sort((a,b) => b.depth.b2/b.depth.a2 - a.depth.b2/a.depth.a2).map(m => [m, T("rDepth",{b: fB(m.depth.b2), a: fB(m.depth.a2)})]);
+  $("sig").innerHTML = box("sNew",nw) + box("sVol",vx) + box("sBo",bo) + box("sTight",ba) + box("sBuy",bp) + box("sDepth",dp);
+}
+const COLS = [["i","#"],["name","cMarket"],["age","cAge"],["usd","cPrice"],["c24","24h"],["c7","7d"],["c30","30d"],["vol","cVol"],["volx","cVolx"],["spread","cSpread"],["b2","cBids"],["a2","cAsks"],["share","cBuy"],["phase","cPhase"],["spark","cSpark"]];
+const val = (m,k) => ({age: age(m), c7: m.an.c7, c30: m.an.c30, spread: m.depth && m.depth.spread, b2: m.depth && m.depth.b2, a2: m.depth && m.depth.a2, share: m.flow && m.flow.share, phase: m.an.phase})[k] ?? m[k];
+function table(){
+  const quotes = [...new Set(R.markets.map(m => m.quote))];
+  $("chips").innerHTML = `<h2>${esc(T("allTitle"))}</h2>` + [["tier","all","fAll"],["tier","niche","fNiche"],["tier","major","fMajor"]].map(([g,k,l]) => `<button class="chip" data-g="${g}" data-k="${k}" aria-pressed="${st[g] === k}">${esc(T(l))}</button>`).join("")
+    + `<span class="dim">·</span>` + [["all", T("fAnyQuote")], ...quotes.map(q => [q, q.toUpperCase()])].map(([k,l]) => `<button class="chip" data-g="quote" data-k="${k}" aria-pressed="${st.quote === k}">${esc(l)}</button>`).join("")
+    + `<span class="dim">·</span><button class="chip" data-g="active" data-k="x" aria-pressed="${st.active}">${esc(T("fActive"))}</button>`;
+  let M = R.markets.filter(m => (st.tier === "all" || m.tier === st.tier) && (st.quote === "all" || m.quote === st.quote) && (!st.active || m.vol > 0) && (!st.q || m.name.toLowerCase().includes(st.q.toLowerCase())));
+  const k = st.sort, d = st.dir;
+  M.sort((a,b) => { const x = val(a,k), y = val(b,k); if (x == null && y == null) return 0; if (x == null) return 1; if (y == null) return -1; return (typeof x === "string" ? x.localeCompare(y) : x - y) * d; });
+  $("cnt").textContent = T("allCnt",{n: M.length, t: R.markets.length});
+  $("tbl").innerHTML = "<thead><tr>" + COLS.map(([c,l]) => `<th data-s="${c}"${c === k ? ` aria-sort="${d < 0 ? "descending" : "ascending"}"` : ""}>${esc(T(l))}${c === k ? (d < 0 ? " ↓" : " ↑") : ""}</th>`).join("") + "</tr></thead><tbody>" +
+    M.map((m,i) => `<tr data-id="${m.id}" class="${st.sel === m.id ? "sel" : ""}"><td class="num dim">${i+1}</td><td class="sym"><b>${esc(m.base.toUpperCase())}</b><span>/${esc(m.quote.toUpperCase())}</span></td><td class="num">${age(m) != null ? (m.legacy ? "≥ " : "") + age(m) : "—"}</td><td class="num">${fP(m.usd)}</td><td class="num">${pct(m.c24)}</td><td class="num">${pct(m.an.c7)}</td><td class="num">${pct(m.an.c30)}</td><td class="num">${m.vol ? fB(m.vol) : "—"}</td><td class="num">${m.volx != null ? `<span class="${m.volx >= 3 ? "pos" : ""}">${nf(m.volx)}x</span>` : "—"}</td><td class="num">${m.depth ? nf(m.depth.spread) + "%" : "—"}</td><td class="num">${m.depth ? fB(m.depth.b2) : "—"}</td><td class="num">${m.depth ? fB(m.depth.a2) : "—"}</td><td class="num">${m.flow && m.flow.share != null ? `<span class="bal"><i style="width:${m.flow.share}%"></i></span> ${Math.round(m.flow.share)}%` : "—"}</td><td>${pill(m.an.phase)}</td><td>${spark(m.spark)}</td></tr>`).join("") + "</tbody>";
+}
+function load(id){ return new Promise((ok, no) => { if (window.RADAR_M && window.RADAR_M[id]) return ok(window.RADAR_M[id]); const s = document.createElement("script"); s.src = "data/m/" + id + ".js"; s.onload = () => ok(window.RADAR_M[id]); s.onerror = no; document.head.appendChild(s); }); }
+function priceChart(rows, an, title, quote, hourly){
+  const S = rows.filter(r => r[4] > 0); if (S.length < 3) return `<div class="chart"><div class="lbl">${esc(title)}</div><p class="note">${esc(T("chFew"))}</p></div>`;
+  const W = 560, H = 250, pl = 6, pr = 6, pt = 14, vh = 44, pb = 18, ch = H - pt - vh - pb - 8, n = S.length;
+  let lo = Math.min(...S.map(r => r[3] > 0 ? r[3] : r[4])), hi = Math.max(...S.map(r => r[2])); if (hi / lo < 1.1){ lo /= 1.05; hi *= 1.05; }
+  const L0 = Math.log(lo), L1 = Math.log(hi), bw = (W - pl - pr) / n, X = i => pl + (i + .5) * bw, Y = v => pt + (1 - (Math.log(Math.max(v, lo)) - L0) / (L1 - L0)) * ch;
+  const vmax = Math.max(...S.map(r => r[5] * r[4])) || 1;
+  let s = [0.25,0.5,0.75].map(f => `<line x1="${pl}" x2="${W-pr}" y1="${pt+f*ch}" y2="${pt+f*ch}" stroke="var(--line)"/>`).join("");
+  if (an && an.acc_low){ const a = Math.max(0, S.findIndex(r => day(r[0]) >= an.acc_from)); let b = S.findIndex(r => day(r[0]) > an.acc_to); if (b < 0) b = n; if (b > a) s += `<rect x="${pl+a*bw}" y="${Y(an.acc_high)}" width="${(b-a)*bw}" height="${Math.max(2, Y(an.acc_low)-Y(an.acc_high))}" fill="var(--band)"/><text x="${pl+a*bw+2}" y="${Y(an.acc_high)-3}">${esc(T("chBase",{n: an.acc_days}))}</text>`; }
+  S.forEach((r,i) => { const up = r[4] >= r[1], col = up ? "var(--up)" : "var(--down)", x = X(i), w = Math.max(1, bw * .7);
+    s += `<line x1="${x}" x2="${x}" y1="${Y(r[2])}" y2="${Y(r[3] > 0 ? r[3] : r[4])}" stroke="${col}" stroke-width="1"/><rect x="${x-w/2}" y="${Math.min(Y(r[1] || r[4]), Y(r[4]))}" width="${w}" height="${Math.max(1, Math.abs(Y(r[1] || r[4]) - Y(r[4])))}" fill="${col}"/>`;
+    const v = r[5] * r[4] / vmax * vh; s += `<rect x="${x-w/2}" y="${H-pb-v}" width="${w}" height="${v}" fill="${col}" opacity=".45"/>`; });
+  if (an && an.bo_date){ const bi = S.findIndex(r => day(r[0]) >= an.bo_date); if (bi >= 0) s += `<path d="M${X(bi)-6},${Y(S[bi][3] || S[bi][4])+14} L${X(bi)+6},${Y(S[bi][3] || S[bi][4])+14} L${X(bi)},${Y(S[bi][3] || S[bi][4])+4} Z" fill="var(--accent)"/>`; }
+  const fmt = t => hourly ? dh(t) : day(t);
+  s += `<text x="${pl}" y="${H-4}">${fmt(S[0][0])}</text><text x="${W-pr}" y="${H-4}" text-anchor="end">${fmt(S[n-1][0])}</text><text x="${pl}" y="10">max ${fQ(hi)} ${quote}</text><text x="${W-pr}" y="10" text-anchor="end">min ${fQ(lo)} ${quote}</text>`;
+  return `<div class="chart"><div class="lbl">${esc(title)} · ${esc(T("chScale"))}</div><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(title)}">${s}</svg></div>`;
+}
+function flowChart(flow){
+  const F = (flow || []).slice(-24*7); if (F.length < 2) return `<div class="chart"><div class="lbl">${esc(T("chFlow"))}</div><p class="note">${esc(T("chFlowNone"))}</p></div>`;
+  const W = 560, H = 170, pl = 6, pr = 6, mid = 80, mx = Math.max(...F.map(r => Math.max(r[1], r[2]))) || 1, t0 = F[0][0], t1 = F[F.length-1][0], span = Math.max(3600, t1 - t0), bw = Math.max(1.2, (W-pl-pr) / (span/3600 + 1) * .8);
+  let s = `<line x1="${pl}" x2="${W-pr}" y1="${mid}" y2="${mid}" stroke="var(--line)"/>`;
+  F.forEach(r => { const x = pl + (r[0]-t0)/span*(W-pl-pr-bw); s += `<rect x="${x}" y="${mid - r[1]/mx*66}" width="${bw}" height="${r[1]/mx*66}" fill="var(--up)"/><rect x="${x}" y="${mid}" width="${bw}" height="${r[2]/mx*66}" fill="var(--down)"/>`; });
+  s += `<text x="${pl}" y="${H-4}">${dh(t0)}</text><text x="${W-pr}" y="${H-4}" text-anchor="end">${dh(t1)}</text><text x="${pl}" y="10">${esc(T("chFlowUp",{v: fB(mx)}))}</text><text x="${pl}" y="${H-16}">${esc(T("chFlowDown"))}</text>`;
+  return `<div class="chart"><div class="lbl">${esc(T("chFlow"))}</div><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(T("chFlow"))}">${s}</svg></div>`;
+}
+function depthChart(snap){
+  const S = (snap || []).slice(-300); if (S.length < 2) return `<div class="chart"><div class="lbl">${esc(T("chDepth"))}</div><p class="note">${esc(T("chDepthFew",{n: S.length}))}</p></div>`;
+  const W = 560, H = 170, pl = 6, pr = 6, pt = 14, pb = 18, mx = Math.max(...S.map(r => Math.max(r[4], r[5]))) || 1, t0 = S[0][0], span = Math.max(1, S[S.length-1][0] - t0);
+  const X = t => pl + (t-t0)/span*(W-pl-pr), Y = v => pt + (1 - v/mx)*(H-pt-pb), path = k => S.map((r,i) => `${i ? "L" : "M"}${X(r[0]).toFixed(1)},${Y(r[k]).toFixed(1)}`).join("");
+  return `<div class="chart"><div class="lbl">${esc(T("chDepth"))}</div><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(T("chDepth"))}"><path d="${path(4)}" fill="none" stroke="var(--up)" stroke-width="1.8"/><path d="${path(5)}" fill="none" stroke="var(--down)" stroke-width="1.8"/><text x="${pl}" y="10">${esc(T("chDepthLeg",{v: fB(mx)}))}</text><text x="${pl}" y="${H-4}">${dh(t0)}</text><text x="${W-pr}" y="${H-4}" text-anchor="end">${dh(S[S.length-1][0])}</text></svg></div>`;
+}
+async function detail(id, scroll=true){
+  const m = R.markets.find(x => x.id === id); if (!m) return; st.sel = id; table();
+  const D = $("detail"); D.hidden = false; D.innerHTML = `<div class="dhead"><span class="t">${esc(m.name)}</span><span class="dim">${esc(T("dLoading"))}</span></div>`;
+  if (scroll) D.scrollIntoView({behavior: "smooth", block: "start"});
+  let d = null; try { d = await load(id); } catch(e) {}
+  if (st.sel !== id) return;
+  const a = m.an, Q = m.quote.toUpperCase(), f = (k,v) => `<div class="fact"><span>${esc(T(k))}</span><b>${v}</b></div>`, sm = s => ` <small class="dim">${esc(s)}</small>`;
+  const facts = [f("dPrice", fP(m.usd) + (m.quote !== "usdt" && m.quote !== "usdc" ? sm(fQ(m.last) + " " + Q) : "")), f("dChg", `${pct(m.c24)} ${pct(a.c7)} ${pct(a.c30)}`), f("dVol", fB(m.vol)), f("dAvg", fB(a.v14)), f("dVolx", m.volx != null ? nf(m.volx) + "x" : "—"),
+    f("dListed", since(m) ? (m.legacy ? "≤ " : "") + since(m) + sm(T("dDays",{n: age(m)})) + (m.created && m.created.slice(0,10) > since(m) ? "<br>" + sm(T("dPair",{d: m.created.slice(0,10)})) : "") : "—"), f("dBase", a.acc_low ? `${fQ(a.acc_low)}–${fQ(a.acc_high)}` + sm(T("dDays",{n: a.acc_days})) : "—"), f("dBo", a.bo_date ? a.bo_date + (a.bo_vol_x ? sm(T("dVolBase",{x: nf(a.bo_vol_x)})) : "") : "—"), f("dPeak", a.peak ? fQ(a.peak) + sm(a.peak_date) : "—"), f("dMult", a.multiple ? nf(a.multiple) + "x" : "—"), f("dOff", a.dd != null ? esc(offPeak(a)) : "—"),
+    f("dAth", `${fQ(a.ath)} / ${fQ(a.atl)}`), f("dSpread", m.depth ? nf(m.depth.spread) + "%" : "—"), f("dBook2", m.depth ? `${fB(m.depth.b2)} / ${fB(m.depth.a2)}` : "—"), f("dBook10", m.depth ? `${fB(m.depth.b10)} / ${fB(m.depth.a10)}` : "—"),
+    f("dFlow", m.flow ? `${fB(m.flow.buy)} / ${fB(m.flow.sell)}` : "—"), f("dTrades", m.flow ? nf(m.flow.n) + sm(T("dMax",{v: fB(m.flow.max)})) : "—")].join("");
+  D.innerHTML = `<div class="dhead"><div><span class="t">${esc(m.name)}</span> ${pill(a.phase)}</div><div><a href="https://safetrade.com/exchange/${esc(m.base.toUpperCase())}-${esc(Q)}" target="_blank" rel="noopener">${esc(T("dOpen"))}</a> <button class="x" id="close">${esc(T("dClose"))}</button></div></div><div class="facts">${facts}</div>`
+    + (d ? `<div class="charts">${priceChart(d.daily, a, T("chDaily"), Q, false)}${priceChart(d.hourly.slice(-24*14), null, T("chHourly"), Q, true)}${flowChart(d.flow)}${depthChart(d.snap)}</div>` : `<p class="note">${esc(T("dFail"))}</p>`)
+    + `<p class="note">${esc(T("dNote",{q: Q}))}</p>`;
+  $("close").onclick = () => { D.hidden = true; st.sel = null; table(); };
+}
+const PGROUPS = [["all","gAll"],["up","gUp"],["acc","gAcc"],["cons","gCons"],["down","gDown"],["new","gNew"]];
+function why(m){ const a = m.an, q = m.quote.toUpperCase(), c30 = a.c30 != null ? sgn(a.c30) : "—";
+  if (a.phase === "accumulation") return T("wAcc",{n: a.acc_days, lo: fQ(a.acc_low), hi: fQ(a.acc_high), q, t: a.tight ? T("wTight",{x: nf(a.tight)}) : ""});
+  if (a.bo_date && pgroup(a.phase) !== "down") return T("wBo",{n: a.acc_days, d: a.bo_date, v: a.bo_vol_x ? T("wBoVol",{x: nf(a.bo_vol_x)}) : "", p: fQ(a.peak), q, m: nf(a.multiple), dd: offPeak(a)});
+  if (a.phase === "correction") return a.peak ? T("wCorrPeak",{d: a.bo_date, p: fQ(a.peak), q, dd: a.dd}) : (a.acc_low ? T("wCorrRange",{lo: fQ(a.acc_low), hi: fQ(a.acc_high), q}) : T("wCorr30",{c: c30}));
+  if (a.phase === "new") return T("wNew",{n: age(m)});
+  return T("wNone",{c: c30}); }
+function phaseChart(rows, a){
+  const S = rows.filter(r => r[4] > 0).slice(-240), n = S.length; if (n < 3) return `<div class="ph">${esc(T("chFew"))}</div>`;
+  const W = 320, H = 130, pl = 4, pr = 6, pt = 12, pb = 16;
+  let lo = Math.min(...S.map(r => r[4])), hi = Math.max(...S.map(r => r[4])); if (a.acc_low) { lo = Math.min(lo, a.acc_low); hi = Math.max(hi, a.acc_high); } if (hi/lo < 1.15){ lo /= 1.08; hi *= 1.08; }
+  const L0 = Math.log(lo), L1 = Math.log(hi), X = i => pl + i/(n-1)*(W-pl-pr), Y = v => pt + (1-(Math.log(v)-L0)/(L1-L0))*(H-pt-pb);
+  let s = [0.33,0.66].map(f => `<line x1="${pl}" x2="${W-pr}" y1="${pt+f*(H-pt-pb)}" y2="${pt+f*(H-pt-pb)}" stroke="var(--line)"/>`).join("");
+  if (a.acc_low){ let i0 = S.findIndex(r => day(r[0]) >= a.acc_from); if (i0 < 0) i0 = 0; let i1 = S.findIndex(r => day(r[0]) > a.acc_to); if (i1 < 0) i1 = n-1; if (i1 > i0) s += `<rect x="${X(i0)}" y="${Y(a.acc_high)}" width="${X(i1)-X(i0)}" height="${Math.max(2, Y(a.acc_low)-Y(a.acc_high))}" fill="var(--band)"/><text x="${X(i0)+2}" y="${Y(a.acc_high)-3}">${esc(T("chBase",{n: a.acc_days}))}</text>`; }
+  const g = pgroup(a.phase), col = g === "up" ? "var(--up)" : g === "down" ? "var(--down)" : "var(--accent)";
+  const line = S.map((r,i) => `${i ? "L" : "M"}${X(i).toFixed(1)},${Y(r[4]).toFixed(1)}`).join("");
+  s += `<path d="${line} L${X(n-1)},${H-pb} L${X(0)},${H-pb} Z" fill="${col}" opacity=".10"/><path d="${line}" fill="none" stroke="${col}" stroke-width="1.7" stroke-linejoin="round"/>`;
+  if (a.bo_date){ const bi = S.findIndex(r => day(r[0]) >= a.bo_date); if (bi >= 0) s += `<path d="M${X(bi)-5},${Y(S[bi][4])+13} L${X(bi)+5},${Y(S[bi][4])+13} L${X(bi)},${Y(S[bi][4])+4} Z" fill="var(--accent)"/>`; }
+  if (a.peak_date){ const pi = S.findIndex(r => day(r[0]) >= a.peak_date); if (pi >= 0) s += `<circle cx="${X(pi)}" cy="${Y(Math.min(hi, Math.max(lo, S[pi][4])))}" r="4" fill="var(--warn)"/>`; }
+  s += `<circle cx="${X(n-1)}" cy="${Y(S[n-1][4])}" r="3.5" fill="var(--ink)"/><text x="${pl}" y="${H-3}">${day(S[0][0])}</text><text x="${W-pr}" y="${H-3}" text-anchor="end">${day(S[n-1][0])}</text><text x="${pl}" y="9">max ${fQ(hi)}</text><text x="${W/2}" y="${H-3}" text-anchor="middle">min ${fQ(lo)}</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(T("chDaily"))}">${s}</svg>`;
+}
+const cardHtml = m => { const a = m.an; return `<button class="pcard" data-id="${m.id}"><div class="hd"><span><b>${esc(m.base.toUpperCase())}</b><small>/ ${esc(m.quote.toUpperCase())}</small></span>${pill(a.phase)}</div><div class="pc" data-load="${m.id}"><div class="ph">${esc(T("pLoad"))}</div></div><div class="facts"><div class="fact"><span>${esc(T("dPrice"))}</span><b>${fP(m.usd)}</b></div><div class="fact"><span>${esc(T("pChg"))}</span><b>${pct(a.c7)} ${pct(a.c30)}</b></div><div class="fact"><span>${esc(T("pVol"))}</span><b>${m.vol ? fB(m.vol) : "—"}${m.volx >= 2 ? ` <small class="pos">${nf(m.volx)}x</small>` : ""}</b></div></div><p class="why">${esc(why(m))}</p></button>`; };
+const fillCard = async el => { const id = el.dataset.load; if (!id) return; delete el.dataset.load; try { const d = await load(id); const m = R.markets.find(x => x.id === id); el.innerHTML = phaseChart(d.daily, m.an); } catch(e) { el.innerHTML = `<div class="ph">${esc(T("dFail"))}</div>`; } };
+function highlights(){
+  const M = R.markets.filter(m => m.tier === "niche" && m.vol > 0), seen = new Set(), out = [];
+  const pick = f => { const m = M.filter(x => !seen.has(x.base) && f(x)).sort((a,b) => b.vol - a.vol)[0]; if (m){ seen.add(m.base); out.push(m); } };
+  pick(m => pgroup(m.an.phase) === "up"); pick(m => m.an.phase === "accumulation"); pick(m => pgroup(m.an.phase) === "down");
+  M.sort((a,b) => b.vol - a.vol).forEach(m => { if (out.length < 3 && !seen.has(m.base)){ seen.add(m.base); out.push(m); } });
+  $("hl").innerHTML = out.map(cardHtml).join(""); document.querySelectorAll("#hl [data-load]").forEach(fillCard);
+}
+let pobs = null;
+function phases(){
+  const base = R.markets.filter(m => (st.ptier === "all" || m.tier === st.ptier) && (!st.pactive || m.vol > 0));
+  $("pchips").innerHTML = PGROUPS.map(([k,l]) => `<button class="chip" data-g="pphase" data-k="${k}" aria-pressed="${st.pphase === k}">${esc(T(l))} (${k === "all" ? base.length : base.filter(m => pgroup(m.an.phase) === k).length})</button>`).join("")
+    + `<span class="dim">·</span><button class="chip" data-g="ptier" data-k="${st.ptier === "niche" ? "all" : "niche"}" aria-pressed="${st.ptier === "niche"}">${esc(T("gNicheOnly"))}</button><button class="chip" data-g="pactive" data-k="x" aria-pressed="${st.pactive}">${esc(T("fActive"))}</button>`;
+  const order = {up:0,acc:1,cons:2,down:3,new:4,other:5};
+  const M = base.filter(m => st.pphase === "all" || pgroup(m.an.phase) === st.pphase).sort((a,b) => (order[pgroup(a.an.phase)] - order[pgroup(b.an.phase)]) || b.vol - a.vol);
+  $("pcnt").textContent = T("pCnt",{n: M.length});
+  $("pgrid").innerHTML = M.length ? M.map(cardHtml).join("") : `<div class="empty">${esc(T("pEmpty"))}</div>`;
+  if (pobs) pobs.disconnect();
+  const fill = fillCard;
+  if ("IntersectionObserver" in window){ pobs = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting){ pobs.unobserve(e.target); fill(e.target); } }), {rootMargin: "400px"}); document.querySelectorAll("#pgrid [data-load]").forEach(el => pobs.observe(el)); }
+  else document.querySelectorAll("#pgrid [data-load]").forEach(fill);
+}
+function show(v){ st.view = v; $("v-markets").hidden = v !== "markets"; $("v-phases").hidden = v !== "phases"; $("t-markets").setAttribute("aria-selected", v === "markets"); $("t-phases").setAttribute("aria-selected", v === "phases"); if (v === "phases") phases(); try { history.replaceState(null, "", v === "phases" ? "#phases" : "#markets"); } catch(e) {} }
+function renderAll(){ statics(); if (!R) return; kpis(); highlights(); signals(); table(); if (st.view === "phases") phases(); if (st.sel) detail(st.sel, false); }
+
+statics();
+$("lang").addEventListener("change", e => { st.lang = e.target.value; try { localStorage.setItem("radar-lang", st.lang); } catch(err) {} renderAll(); });
+if (!R){ $("nodata").hidden = false; }
+else {
+  renderAll();
+  $("chips").addEventListener("click", e => { const b = e.target.closest("[data-g]"); if (!b) return; if (b.dataset.g === "active") st.active = !st.active; else st[b.dataset.g] = b.dataset.k; table(); });
+  $("q").addEventListener("input", e => { st.q = e.target.value; if (st.view !== "markets") show("markets"); table(); });
+  $("tbl").addEventListener("click", e => { const th = e.target.closest("th[data-s]"); if (th){ const s = th.dataset.s; if (s === "i" || s === "spark") return; if (st.sort === s) st.dir = -st.dir; else { st.sort = s; st.dir = (s === "name" || s === "phase" || s === "age" || s === "spread") ? 1 : -1; } return table(); } const tr = e.target.closest("tr[data-id]"); if (tr) detail(tr.dataset.id); });
+  $("sig").addEventListener("click", e => { const li = e.target.closest("li[data-id]"); if (li) detail(li.dataset.id); });
+  $("t-markets").onclick = () => show("markets"); $("t-phases").onclick = () => show("phases");
+  $("pchips").addEventListener("click", e => { const b = e.target.closest("[data-g]"); if (!b) return; if (b.dataset.g === "pactive") st.pactive = !st.pactive; else st[b.dataset.g] = b.dataset.k; phases(); });
+  $("pgrid").addEventListener("click", e => { const c = e.target.closest(".pcard[data-id]"); if (c) detail(c.dataset.id); });
+  $("hl").addEventListener("click", e => { const c = e.target.closest(".pcard[data-id]"); if (c) detail(c.dataset.id); });
+  if (location.hash === "#phases") show("phases");
+}
+</script>
+</body>
+</html>
