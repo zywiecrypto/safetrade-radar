@@ -13,7 +13,7 @@ The interface is available in English, German, French, Russian, Chinese and Span
 | `collect.py` | Collector. Plain Python 3, no packages to install. Writes everything to `data/`. |
 | `index.html` | The site. Reads `data/data.js`; works from disk (double-click) and on GitHub Pages. |
 | `i18n.js` | Interface translations. English is the source; add a language by adding one block. |
-| `.github/workflows/collect.yml` | GitHub Actions job: collects every 2 hours and stores data on the `data` branch. |
+| `.github/workflows/collect.yml` | GitHub Actions job: collects every 30 minutes and stores data on the `data` branch. |
 | `mac/run.command` | macOS double-click: collect, then open the site. |
 | `mac/install-auto.sh` | Optional: collect in the background every 30 minutes while the Mac is on. |
 

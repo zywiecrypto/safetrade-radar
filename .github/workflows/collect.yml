@@ -2,7 +2,7 @@ name: Collect SafeTrade data
 
 on:
   schedule:
-    - cron: "7 */3 * * *"   # every 2 hours; about 900 of the 2000 free minutes per month in a private repo
+    - cron: "7,37 * * * *"   # every 30 minutes
   workflow_dispatch:
 
 permissions:

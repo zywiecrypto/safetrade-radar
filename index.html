@@ -161,7 +161,7 @@ footer{font-size:12px;color:var(--muted);max-width:95ch;line-height:1.6}
 <script src="i18n.js"></script>
 <script src="data/data.js"></script>
 <script>
-const R = window.RADAR, L = window.RADAR_I18N, $ = id => document.getElementById(id);
+let R = window.RADAR; const L = window.RADAR_I18N, $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const st = { tier: "niche", quote: "all", q: "", sort: "vol", dir: -1, active: true, sel: null, view: "markets", pphase: "all", ptier: "niche", pactive: true, lang: "en" };
 try { const s = localStorage.getItem("radar-lang"); if (s && L[s]) st.lang = s; else { const n = (navigator.language || "en").slice(0,2).toLowerCase(); if (L[n]) st.lang = n; } } catch(e) {}
@@ -224,7 +224,7 @@ function table(){
   $("tbl").innerHTML = "<thead><tr>" + COLS.map(([c,l]) => `<th data-s="${c}"${c === k ? ` aria-sort="${d < 0 ? "descending" : "ascending"}"` : ""}>${esc(T(l))}${c === k ? (d < 0 ? " ↓" : " ↑") : ""}</th>`).join("") + "</tr></thead><tbody>" +
     M.map((m,i) => `<tr data-id="${m.id}" class="${st.sel === m.id ? "sel" : ""}"><td class="num dim">${i+1}</td><td class="sym"><b>${esc(m.base.toUpperCase())}</b><span>/${esc(m.quote.toUpperCase())}</span></td><td class="num">${age(m) != null ? (m.legacy ? "≥ " : "") + age(m) : "—"}</td><td class="num">${fP(m.usd)}</td><td class="num">${pct(m.c24)}</td><td class="num">${pct(m.an.c7)}</td><td class="num">${pct(m.an.c30)}</td><td class="num">${m.vol ? fB(m.vol) : "—"}</td><td class="num">${m.volx != null ? `<span class="${m.volx >= 3 ? "pos" : ""}">${nf(m.volx)}x</span>` : "—"}</td><td class="num">${m.depth ? nf(m.depth.spread) + "%" : "—"}</td><td class="num">${m.depth ? fB(m.depth.b2) : "—"}</td><td class="num">${m.depth ? fB(m.depth.a2) : "—"}</td><td class="num">${m.flow && m.flow.share != null ? `<span class="bal"><i style="width:${m.flow.share}%"></i></span> ${Math.round(m.flow.share)}%` : "—"}</td><td>${pill(m.an.phase)}</td><td>${spark(m.spark)}</td></tr>`).join("") + "</tbody>";
 }
-function load(id){ return new Promise((ok, no) => { if (window.RADAR_M && window.RADAR_M[id]) return ok(window.RADAR_M[id]); const s = document.createElement("script"); s.src = "data/m/" + id + ".js"; s.onload = () => ok(window.RADAR_M[id]); s.onerror = no; document.head.appendChild(s); }); }
+function load(id){ return new Promise((ok, no) => { if (window.RADAR_M && window.RADAR_M[id]) return ok(window.RADAR_M[id]); const s = document.createElement("script"); s.src = "data/m/" + id + ".js?v=" + encodeURIComponent(R.generated || ""); s.onload = () => ok(window.RADAR_M[id]); s.onerror = no; document.head.appendChild(s); }); }
 function priceChart(rows, an, title, quote, hourly){
   const S = rows.filter(r => r[4] > 0); if (S.length < 3) return `<div class="chart"><div class="lbl">${esc(title)}</div><p class="note">${esc(T("chFew"))}</p></div>`;
   const W = 560, H = 250, pl = 6, pr = 6, pt = 14, vh = 44, pb = 18, ch = H - pt - vh - pb - 8, n = S.length;
@@ -334,6 +334,11 @@ else {
   $("hl").addEventListener("click", e => { const c = e.target.closest(".pcard[data-id]"); if (c) detail(c.dataset.id); });
   if (location.hash === "#phases") show("phases");
 }
+function refresh(){ const s = document.createElement("script"); s.src = "data/data.js?t=" + Date.now();
+  s.onload = () => { s.remove(); const n = window.RADAR; if (!n || (R && n.generated === R.generated)) return; if (!R) return location.reload(); R = n; window.RADAR_M = {}; renderAll(); };
+  s.onerror = () => s.remove(); document.head.appendChild(s); }
+setInterval(refresh, 5 * 60 * 1000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) refresh(); });
 </script>
 </body>
 </html>
